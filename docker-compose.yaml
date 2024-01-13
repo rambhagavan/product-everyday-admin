@@ -1,0 +1,37 @@
+version: "3.8"
+services:
+  ped-server-service:
+    image: ped-server
+    build: ./server/
+    ports:
+      - "6080:6080"
+    networks:
+      - ped-app-network
+    depends_on:
+      - ped-mongo-db
+
+  ped-admin-ui-service:
+    image: ped-admin-ui
+    build: ./admin-ui/
+    ports:
+      - "3000:3000"
+    networks:
+      - ped-app-network
+
+  ped-mongo-db:
+    image: mongo:7.0.2
+    ports:
+      -"27017:27017"
+    networks:
+      - ped-app-network
+    volumes:
+      - mongo-data:/data/db
+
+networks:
+  ped-app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
+
