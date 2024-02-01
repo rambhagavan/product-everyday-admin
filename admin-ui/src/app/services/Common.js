@@ -92,12 +92,23 @@ export const put = async (url, payload) => {
     return data
 }
 
-export const uploadImage = async (url, formData) => {
-    const headersData = generateGlobalHeader()
-    const response = await axios.post(url, formData, headersData)
-        .then(res => { return res })
-        .catch(err => { return err });
-    const data = response?.data || []
-    return data
-}
+// export const uploadImage = async (url, formData) => {
+//     const headersData = generateGlobalHeader()
+//     const response = await axios.post(url, formData, headersData)
+//         .then(res => { return res })
+//         .catch(err => { return err });
+//     const data = response?.data || []
+//     return data
+// }
 
+export const uploadImage = async (url, formData) => {
+    const headersData = generateGlobalHeader();
+    
+    try {
+        const response = await axios.post(url, formData, headersData);
+        return response.data || []; // Return the data property of the response
+    } catch (err) {
+        console.error(err);
+        return { error: 'An error occurred during the upload.' };
+    }
+};

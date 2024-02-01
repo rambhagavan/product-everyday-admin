@@ -10,6 +10,7 @@ import CategoryEditForm from './components/CategoryEditForm';
 import ConfirmDialog from '../../components/Dialogs/ConfirmDialog';
 import { Pagination } from 'antd';
 import { Input, Space } from 'antd';
+import {addCategoryList} from '../../redux/actions/categoryListDataActions'
 
 const { Search } = Input;
 
@@ -25,6 +26,9 @@ const CategoryList = () => {
   const [current, setCurrent] = useState(3);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkaction, setbulkaction] = useState(null)
+
+  console.log("piyush")
+
 
 
   useEffect(() => {
@@ -51,10 +55,13 @@ const CategoryList = () => {
       page: page,
       limit: limit
     }
+
     const data = await get(url, params)
     if (data && data?.success === true) {
       setcategories(data?.data?.categories)
       settotalcategories(data?.data?.count)
+      
+      // dispatch(addCategoryList(data))
       dispatch(showSnackBar({ msg: "Get Category Success", type: "success" }))
     } else {
       dispatch(showSnackBar({ msg: `Get Category Fail ${data.exception_reason}`, type: "error" }))

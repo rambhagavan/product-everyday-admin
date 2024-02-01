@@ -25,6 +25,7 @@ const create = async (req, res) => {
                 errorResponse(400, null, 'You must enter description & name.')
             )
         }
+        
 
         const category = new Category({
             name,

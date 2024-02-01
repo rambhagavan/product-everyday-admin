@@ -10,13 +10,19 @@ import { useDispatch } from 'react-redux';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { showSnackBar } from '../../../redux/actions/snackBarActions';
-import { post, uploadImage } from '../../../services/Common';
+import { get,post, uploadImage } from '../../../services/Common';
 import SaveIcon from '@mui/icons-material/Save';
 import { BACKEND_URL } from '../../../core/constants';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import {useSelector} from 'react-redux'
+import  { useEffect} from 'react'
+import {addCategoryList} from '../../../redux/actions/categoryListDataActions'
+
+
+
 
 const createPayload = {
     "name": "",
@@ -26,36 +32,97 @@ const createPayload = {
     "weight": 0,
     "image": "",
     "taxable": false,
-    "isActive": true
+    "isActive": true,
+    "category": "",
 }
+
 
 const CreateForm = ({ setloading, fetchAllProducts }) => {
     const dispatch = useDispatch()
+
+   
+
     const [productPayload, setproductPayload] = useState(createPayload)
     const [selectedFiles, setSelectedFiles] = useState(null);
-    const [age, setAge] = React.useState('');
+    const [selectedCategoryData, setSelectedCategory] = useState('')
+    
+    useEffect(() => {
+        fetchAllCategories()
+      }, [])
+    
+      const fetchAllCategories = async (sortOrder = false, page = 1, limit = 10) => {
+        const url = BACKEND_URL + '/category'
+        const params = {
+          sortOrder: sortOrder,
+          page: page,
+          limit: limit
+        }
+    
+        const data = await get(url, params)
+        
+        if (data && data?.success === true) {
+          console.log(data);  
+          dispatch(addCategoryList(data))
+          
+      } 
+    }
 
-    const handleChange = (event) => {
-        setAge(event.target.value);
-    };
+    const categories = useSelector((state)=>state.categoryListDataReducer.categoryList.data.categories);
+    
 
+    // categories.map((categoryName)=>
+    // (console.log(categoryName.name)))
+
+    // const handleChange = (event) => {
+    //     setSelectedCategory(event.target.value);
+    // };
+     
+   
+   //console.log(categories[0].name)
     const handleFileChange = (event) => {
         setSelectedFiles(event.target.files);
     };
 
     const onChangeForm = (e) => {
-        if (e.target.name === 'isActive' || e.target.name === 'taxable') {
+        if (e.target.name === 'isActive' || e.target.name === 'taxable'  ) {
             setproductPayload({ ...productPayload, [e.target.name]: e.target.checked })
         }
         else {
             setproductPayload({ ...productPayload, [e.target.name]: e.target.value })
         }
+        if(e.target.name==='category')
+        {
+          setproductPayload({...productPayload , [e.target.name]: e.target.value})
+          setSelectedCategory(e.target.value)
+        }
+
+        
+          
     }
+    // const onChangeForm = (e) => {
+    //     console.log(e.target.name)
+    //     if (e.target.name === 'isActive' || e.target.name === 'taxable') {
+    //         setproductPayload({ ...productPayload, [e.target.name]: e.target.checked });
+    //     } else if (e.target.name === 'category') {
+    //         setSelectedCategory(e.target.value);
+    //         setproductPayload({ ...productPayload, 'category': e.target.value });
+    //     } else {
+    //         setproductPayload({ ...productPayload, [e.target.name]: e.target.value });
+    //     }
+    // };
+
 
     const handleCreateProduct = async () => {
-        setloading(true);
+        setloading(true); 
+        
         const image_data = await handleImageUpload()
         let payload = productPayload
+        console.log(selectedCategoryData)
+        if (selectedCategoryData)
+        {
+            console.log(selectedCategoryData)
+            
+        }
         if (selectedFiles && !image_data) {
             dispatch(showSnackBar({ msg: `Error in Upload Image`, type: "error" }))
             return
@@ -64,6 +131,7 @@ const CreateForm = ({ setloading, fetchAllProducts }) => {
             setproductPayload({ ...productPayload, 'image': image_data[0]['url'] });
             payload = { ...productPayload, 'image': image_data[0]['url'] }
         }
+        
         const url = BACKEND_URL + '/product/add'
         const data = await post(url, payload)
         if (data && data?.success === true) {
@@ -73,6 +141,7 @@ const CreateForm = ({ setloading, fetchAllProducts }) => {
             dispatch(showSnackBar({ msg: `Create Product Fail ${data.exception_reason}`, type: "error" }))
         }
         setloading(false);
+        console.log(productPayload)
     }
 
     const handleImageUpload = async () => {
@@ -91,6 +160,13 @@ const CreateForm = ({ setloading, fetchAllProducts }) => {
             }
         }
     }
+
+    const handleCategorySelect = (e) => {
+        const selectedCategory = e.target.value;
+        // Assuming you have a function to update the payload with the selected category
+        setSelectedCategory(selectedCategory);
+      };
+    
 
     return (
         <Fragment>
@@ -150,25 +226,66 @@ const CreateForm = ({ setloading, fetchAllProducts }) => {
                 <Grid item xs={12}>
                     <input type="file" className='upload-list-inline' onChange={handleFileChange} />
                 </Grid>
-                <Grid item xs={4}>
+                {/* <Grid item xs={4}>
                     <FormControl sx={{ minWidth: 120 }} size="small">
-                        <InputLabel id="demo-select-small-label">Catgory</InputLabel>
+                        <InputLabel id="demo-select-small-label">Category</InputLabel>
                         <Select
                             labelId="demo-select-small-label"
                             id="demo-select-small"
-                            value={age}
+                            value={selectedCategoryData}
                             label="Category"
                             onChange={(e)=>onChangeForm(e)}
+                            displayEmpty 
                         >
-                            <MenuItem value="">
-                                <em>None</em>
-                            </MenuItem>
-                            <MenuItem value={10}>Ten</MenuItem>
-                            <MenuItem value={20}>Twenty</MenuItem>
-                            <MenuItem value={30}>Thirty</MenuItem>
+                             
+                            {categories.map((categoryName)=>(
+                            <MenuItem key={categoryName.id}  
+                            onClick={() => handleCategoryClick(categoryName)}>{categoryName.name}</MenuItem>))}
+                            
+                            
                         </Select>
                     </FormControl>
-                </Grid>
+                </Grid> */}
+                 {/* <Grid item xs={4}>
+                <FormControl sx={{ minWidth: 120 }} size="small">
+                    <InputLabel id="demo-select-small-label">Category</InputLabel>
+                    <Select
+                        labelId="demo-select-small-label"
+                        id="demo-select-small"
+                        value={selectedCategoryData}
+                        label="Category"
+                        onChange={(e) => onChangeForm(e)}
+                        displayEmpty
+                    >
+                        {categories.map((categoryName) => (
+                            <MenuItem key={categoryName.id} value={categoryName.name}
+                            onClick={handleCategoryClick}>
+                                {categoryName.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </Grid> */}
+                 <Grid item xs={4}>
+                    <FormControl sx={{ minWidth: 120 }} size="small">
+                        <InputLabel id="demo-select-small-label">Category</InputLabel>
+                       <Select
+                          labelId="demo-select-small-label"
+                           id="demo-select-small"
+                           value={selectedCategoryData}
+                           name='category'
+                          label="Category"
+                          onChange={(e) => onChangeForm(e)}
+                           displayEmpty
+                             >
+                              {categories.map((categoryName) => (
+                        <MenuItem key={categoryName.id} value={categoryName.name}>
+                                  {categoryName.name}
+                        </MenuItem>
+                           ))}
+                        </Select>
+                  </FormControl>
+                 </Grid>
                 <Grid item xs={12}>
                     <FormControlLabel
                         control={

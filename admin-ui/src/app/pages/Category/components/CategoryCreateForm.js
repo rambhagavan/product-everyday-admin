@@ -24,7 +24,7 @@ const createCategoryBody = {
 const CategoryCreateForm = ({ setloading, fetchAllCategories }) => {
     const dispatch = useDispatch()
     const [categoryPayload, setcategoryPayload] = useState(createCategoryBody)
-    const [selectedFiles, setSelectedFiles] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState([]);
 
     const handleFileChange = (event) => {
         setSelectedFiles(event.target.files);
@@ -62,22 +62,46 @@ const CategoryCreateForm = ({ setloading, fetchAllCategories }) => {
         setloading(false);
     }
 
+    // const handleImageUpload = async () => {
+    //     if (selectedFiles && selectedFiles.length>0) {
+           
+    //          const formData = new FormData();
+    //         // for (let i = 0; i < selectedFiles.length; i++) {
+    //         //     formData.append('images', selectedFiles[i]);
+    //         // }
+    //         formData.append('image', selectedFiles[0]);
+    //         const url = BACKEND_URL + '/upload/'
+    //         const data  = await uploadImage(url,formData);
+    //         if (data.success === true) {
+    //             return data?.data
+    //         }else{
+    //             console.log(data)
+    //             return null
+    //         }
+    //     }
+    // }
     const handleImageUpload = async () => {
-        if (selectedFiles) {
-            const formData = new FormData();
-            for (let i = 0; i < selectedFiles.length; i++) {
-                formData.append('images', selectedFiles[i]);
-            }
-            const url = BACKEND_URL + '/upload/'
-            const data  = await uploadImage(url,formData);
-            if (data.success === true) {
-                return data?.data
-            }else{
-                console.log(data)
-                return null
-            }
+        if (selectedFiles && selectedFiles.length > 0) {
+          const formData = new FormData();
+      
+          for (let i = 0; i < selectedFiles.length; i++) {
+            formData.append('images', selectedFiles[i]);
+          }
+      
+          const url = BACKEND_URL + '/upload/';
+          const data = await uploadImage(url, formData);
+      
+          if (data.success === true) {
+            return data.data;
+          } else {
+            console.log(data.error);
+            return null;
+          }
+        } else {
+          console.warn('No files selected for upload.');
+          return null;
         }
-    }
+      };
 
     return (
         <Fragment>
