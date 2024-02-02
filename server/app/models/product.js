@@ -27,6 +27,10 @@ const ProductSchema = new Schema({
     type: String,
     
   },
+  // rating:{
+  //   type :Number,
+  //   default : 0
+  // },
   quantity: {
     type: Number,
     default: 0

@@ -19,6 +19,8 @@ const create = async (req, res) => {
         const isActive = req.body.isActive;
         const brand = req.body.brand;
         const image = req.body.image;
+        const rating= req.body.rating;
+        
         const sku = skuGenerator(name)
 
         if (!sku) {
@@ -32,6 +34,8 @@ const create = async (req, res) => {
                 errorResponse(400, null, 'Description/Name is Missing')
             );
         }
+
+      
 
         if (!quantity) {
             return res.status(400).send(

@@ -15,7 +15,11 @@ router.post('/add', auth(), role.checkRole(ROLES.Admin), (req, res) => {
 });
 
 // fetch store categories api
-router.get('/list/active', async (req, res) => {
+router.get('/count', async (req, res) => {
+  categoryController.count(req, res);
+});
+
+router.get('/active/list', async (req, res) => {
   categoryController.listActive(req, res);
 });
 
@@ -44,6 +48,12 @@ router.put('/:id', auth(), role.checkRole(ROLES.Admin), checkValidMongoDbId(), a
 router.delete('/:id', auth(), role.checkRole(ROLES.Admin), checkValidMongoDbId(), async (req, res) => {
   categoryController.remove(req, res);
 });
+
+// count categories
+// router.get('/count' , async (req, res)=>{
+//   categoryController.countData(req ,res);
+// });
+
 
 
 

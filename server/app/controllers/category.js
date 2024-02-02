@@ -85,7 +85,7 @@ const readActive = async (req, res) => {
                 errorResponse(404, null, 'No Category found.')
             )
         }
-
+        
         res.status(200).send(
             successResponse(200, categoryDoc, null)
         )
@@ -138,9 +138,9 @@ const list = async (req, res) => {
     }
 }
 
-const listActive = async (req, res) => {
+const count = async (req, res) => {
     try {
-        const categories = await Category.find({ isActive: true });
+        const categories = await Category.count({ });
         res.status(200).send(
             successResponse(200, categories, null)
         )
@@ -292,6 +292,20 @@ const bulk = async (req, res) => {
     }
 }
 
+const listActive = async (req,res)=> {
+    try {
+        const categories = await Category.find({ isActive : true });
+        res.status(200).send(
+            successResponse(200, categories, null)
+        )
+    } catch (err) {
+        logger.fatal(err)
+        res.status(400).send(
+            errorResponse(400, err.message, 'Your request could not be processed. Please try again.')
+        )
+    }
+}
+
 module.exports = {
     create,
     read,
@@ -301,5 +315,6 @@ module.exports = {
     remove,
     update,
     bulk,
-    search
+    search,
+    count,
 }
