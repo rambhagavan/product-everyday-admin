@@ -10,18 +10,18 @@ const OrderSchema = new Schema({
     email: { type: String, required: true },
   },
   orderItems: [{
-    productId: {type: Schema.Types.ObjectId},
-    productName: {type: String},
-    productType: {type: String},
-    quantity: { type: Number},
-    price: { type: Number}
+    productId: {type: Schema.Types.ObjectId, required: true},
+    productName: {type: String, required: true},
+    productType: {type: String, required: true},
+    quantity: { type: Number, required: true},
+    price: { type: Number, required: true},
   }],
   totalItems: { type: Number, required: true},
   totalCartPrice: { type: Number, required: true},
   deliveryAddressInfo: {
     address:{ type: String, required: true },
-    city: { type: String, required: true, default: 'Bangalore' },
-    postalCode: { type: Number, required: true, default: '000000'},
+    city: { type: String, required: true},
+    postalCode: { type: Number, required: true},
     country: { type: String, required: true , default: 'India'}
   },
   paymentIntent: {

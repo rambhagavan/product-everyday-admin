@@ -1,10 +1,6 @@
 const Order = require('../models/order.js');
-const { ORDER_ITEM_STATUS } = require('../constants/index.js');
-const extend = require('lodash/extend');
 const logger = require('../core/logger');
 const { successResponse, errorResponse } = require('../core/response');
-const chalk = require('chalk');
-const Mongoose = require('mongoose');
 
 //create new order
 const create = async (req, res, next) => {
@@ -46,6 +42,11 @@ const create = async (req, res, next) => {
 //fetch order by id
 const read = async (req, res, next) => {
     try {
+        const orderId = req.params.id
+        if (!orderId) {
+            return res.status(400).json({ error: 'Missing orderId  parameter' });
+        }
+        
         const order = await Order.findById(req.params.orderId);
         if (!order) {
             return res.status(404).send(
@@ -67,8 +68,11 @@ const read = async (req, res, next) => {
 //fetch user orders(myorders)
 const readUserOrders = async (req, res, next) => {
     try {
-        const userId = req.params.userId
-        console.log(typeof(userId));
+        const userId = req.params.id
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId  parameter' });
+        }
+
         const orders = await Order.find({ "user.userId": userId});
 
         if (!orders) {
@@ -139,7 +143,12 @@ const list = async (req, res, next) => {
 //update order status
 const update = async (req, res, next) => {
     try {
-        let order = await Order.findById(req.params.orderId);
+        const orderId = req.params.id
+        if (!orderId) {
+            return res.status(400).json({ error: 'Missing orderId  parameter' });
+        }
+        
+        let order = await Order.findById(orderId);
         let newOrderStatus = req.query.orderStatus;
         if (!order) {
             return res.status(404).send(
@@ -164,7 +173,10 @@ const update = async (req, res, next) => {
 //delete order
 const deleteOrder = async(req,res) => {
     try {
-        const orderId = req.params.orderId;
+        const orderId = req.params.id;
+        if (!orderId) {
+            return res.status(400).json({ error: 'Missing orderId  parameter' });
+        }
         const order = await Order.findById(orderId);
         
         if (!order) {

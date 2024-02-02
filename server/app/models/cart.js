@@ -5,11 +5,11 @@ const { Schema } = Mongoose;
 const CartSchema = new Schema({
     userId: {type: Schema.Types.ObjectId, required: true},
     cartItems: [{
-        productId: {type: Schema.Types.ObjectId},
-        productName: {type: String},
-        productType: {type: String},
-        quantity: { type: Number},
-        price: { type: Number}
+        productId: {type: Schema.Types.ObjectId, required: true},
+        productName: {type: String, required: true},
+        productType: {type: String, required: true},
+        quantity: { type: Number, required: true},
+        price: { type: Number, required: true},
     }],
     totalItems: { type: Number, default: 0},
     totalAmount: { type: Number, default: 0},

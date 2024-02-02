@@ -2,11 +2,9 @@ const Cart = require('../models/cart');
 const { successResponse, errorResponse } = require('../core/response');
 const logger = require('../core/logger');
 
-const { skuGenerator, validateMongoDbId } = require('../utils/utils');
-
 // Create a new cart
 const create = async (req, res) => {
-    const  {userId} = req.body;
+    const  userId = req.body.id;
     const cartItems = []
     try {
         if (!userId) {
@@ -26,7 +24,7 @@ const create = async (req, res) => {
         const savedCart = await cart.save();
 
         res.status(200).send(
-            successResponse(200, savedCart, `Product has been added to cart successfully!`)
+            successResponse(200, savedCart, `Cart has been created successfully!`)
         );
 
     }
@@ -41,8 +39,7 @@ const create = async (req, res) => {
 // Fetch all cart info of a user
 const read = async (req, res) => {
     try {
-        const userId = req.params.userId;
-
+        const userId = req.params.id;
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId query parameter' });
           }
@@ -109,10 +106,10 @@ const list = async (req, res) => {
 // Fetch cart items
 const listItems = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.params.id;
         if (!userId) {
             return res.status(400).json({ error: 'Missing userId query parameter' });
-          }
+        }
 
         const cartDoc = await Cart.findOne({userId: userId })
 
@@ -134,7 +131,11 @@ const listItems = async (req, res) => {
 const update = async (req, res) => {
     try {
         const {item } = req.body;
-        const userId = req.params.userId;
+        const userId = req.params.id;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId query parameter' });
+        }
         
         let cart = await Cart.findOne({ userId });
 
@@ -159,7 +160,7 @@ const update = async (req, res) => {
         await cart.save();
 
         res.status(200).send(
-            successResponse(200, cart, 'Item has been added successfully!')
+            successResponse(200, cart, 'Item has been added to Cart successfully!')
         )
 
     }
@@ -175,7 +176,11 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
     try {
         const { item } = req.body;
-        const userId = req.params.userId;
+        const userId = req.params.id;
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId  parameter' });
+        }
+
         const cart = await Cart.findOne({userId: userId })
         if (!cart) {
             return res.status(404).send(
@@ -215,7 +220,11 @@ const remove = async (req, res) => {
 //empty cart
 const emptyCart = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.params.id;
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId query parameter' });
+        }
+        
         const cart = await Cart.findOne({userId: userId })
         if (!cart) {
             return res.status(404).send(
