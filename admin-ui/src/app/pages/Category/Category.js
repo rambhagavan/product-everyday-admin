@@ -27,7 +27,7 @@ const CategoryList = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkaction, setbulkaction] = useState(null)
 
-  console.log("piyush")
+
 
 
 
