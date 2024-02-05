@@ -49,11 +49,11 @@ const create = async (req, res) => {
             );
         }
 
-        // if(!category){
-        //     return res.status(400).send(
-        //         errorResponse(400, null, 'you must fill the category name')
-        //     )
-        // }
+        if(!category){
+            return res.status(400).send(
+                errorResponse(400, null, 'you must fill the category name')
+            )
+        }
 
         const foundProduct = await Product.findOne({ sku });
 
