@@ -13,10 +13,14 @@ const create = async (req, res) => {
         const description = req.body.description;
         const quantity = req.body.quantity;
         const price = req.body.price;
+        // new addition
+        const category = req.body.category;
         const taxable = req.body.taxable;
         const isActive = req.body.isActive;
         const brand = req.body.brand;
         const image = req.body.image;
+        const rating= req.body.rating;
+        
         const sku = skuGenerator(name)
 
         if (!sku) {
@@ -31,6 +35,8 @@ const create = async (req, res) => {
             );
         }
 
+      
+
         if (!quantity) {
             return res.status(400).send(
                 errorResponse(400, null, 'Quantity is Missing')
@@ -41,6 +47,12 @@ const create = async (req, res) => {
             return res.status(400).send(
                 errorResponse(400, null, 'You must enter a price.')
             );
+        }
+
+        if(!category){
+            return res.status(400).send(
+                errorResponse(400, null, 'you must fill the category name')
+            )
         }
 
         const foundProduct = await Product.findOne({ sku });

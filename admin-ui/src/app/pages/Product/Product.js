@@ -10,6 +10,8 @@ import EditForm from './components/EditForm';
 import ConfirmDialog from '../../components/Dialogs/ConfirmDialog';
 import { Pagination } from 'antd';
 import { Input, Space } from 'antd';
+import {useSelector} from 'react-redux'
+import {addCategoryList} from '../../redux/actions/categoryListDataActions'
 
 const { Search } = Input;
 
@@ -43,6 +45,27 @@ const Product = () => {
     }
   }
 
+  useEffect(() => {
+    fetchAllCategories()
+  }, [])
+
+  const fetchAllCategories = async (sortOrder = false, page = 1, limit = 10) => {
+    const url = BACKEND_URL + '/category'
+    const params = {
+      sortOrder: sortOrder,
+      page: page,
+      limit: limit
+    }
+
+    const data = await get(url, params)
+    
+    if (data && data?.success === true) {
+      console.log(data);  
+      dispatch(addCategoryList(data))
+      
+  } 
+}
+
   const fetchAllProducts = async (sortOrder = false, page = 1, limit = 10) => {
     setloading(true);
     const url = BACKEND_URL + '/product'
@@ -55,7 +78,8 @@ const Product = () => {
     if (data && data?.success === true) {
       setproducts(data?.data?.products)
       settotalproducts(data?.data?.count)
-      // dispatch(showSnackBar({ msg: "Get Product Success", type: "success" }))
+      
+      dispatch(showSnackBar({ msg: "Get Product Success", type: "success" }))
     } else {
       dispatch(showSnackBar({ msg: `Get Product Fail ${data.exception_reason}`, type: "error" }))
     }

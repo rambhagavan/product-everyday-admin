@@ -22,10 +22,15 @@ const ProductSchema = new Schema({
     type: String,
     trim: true
   },
+  // new addition
   category: {
     type: String,
-    default: null
+    
   },
+  // rating:{
+  //   type :Number,
+  //   default : 0
+  // },
   quantity: {
     type: Number,
     default: 0
