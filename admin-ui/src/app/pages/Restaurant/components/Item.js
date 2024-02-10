@@ -27,7 +27,7 @@ import TabPanel from '@mui/lab/TabPanel';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ImageListItem from '@mui/material/ImageListItem';
 import ConfirmDialog from '../../../components/Dialogs/ConfirmDialog';
-
+import EditDialog from '../../../components/Dialogs/EditDialog';
 const createPayload = {
     "restaurantId": "",
     "name": "",
@@ -50,9 +50,12 @@ const Item = ({ restaurantId, setloading }) => {
     const [restaurantItems, setrestaurantItems] = useState([])
     const [totalrestaurantItems, settotalrestaurantItems] = useState(0)
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedRestaurantItem, setselectedRestaurantItem] = useState(null)
+    const [selectedRestaurantItem, setselectedRestaurantItem] = useState(createPayload)
     const [editflag, seteditflag] = useState(false)
-    console.log(restaurantId)
+    const [price, setprice] = useState("")    //   to set the price of the item only numeric in input field
+    const [editdialogOpen, seteditdialogOpen] = useState(false);
+
+
 
     useEffect(() => {
         fetchRestaurantItems()
@@ -71,7 +74,7 @@ const Item = ({ restaurantId, setloading }) => {
         if (data && data?.success === true) {
             setrestaurantItems(data?.data?.restaurantItems)
             settotalrestaurantItems(data?.data?.count)
-            // dispatch(showSnackBar({ msg: "Get Restaurant Success", type: "success" }))
+            dispatch(showSnackBar({ msg: "Get Restaurant Success", type: "success" }))
         } else {
             dispatch(showSnackBar({ msg: `Get Restaurant Fail ${data.exception_reason}`, type: "error" }))
         }
@@ -79,6 +82,8 @@ const Item = ({ restaurantId, setloading }) => {
     }
 
     const handleChangeTab = (event, newValue) => {
+        setrestauranItemtPayload(createPayload)
+        setprice("");
         settab(newValue);
     };
 
@@ -91,7 +96,9 @@ const Item = ({ restaurantId, setloading }) => {
             setrestauranItemtPayload({ ...restauranItemtPayload, [e.target.name]: e.target.checked })
         }
         else if (e.target.name === 'price') {
-            setrestauranItemtPayload({ ...restauranItemtPayload, [e.target.name]: Number(e.target.value) })
+            const priceOfitem = e.target.value.replace(/[^0-9]/g, '');
+            setprice(priceOfitem)
+            setrestauranItemtPayload({ ...restauranItemtPayload, [e.target.name]: priceOfitem })
         }
         else if (e.target.name === 'categories' || e.target.name === 'cuisines') {
             let stringlist = e.target.value
@@ -113,7 +120,6 @@ const Item = ({ restaurantId, setloading }) => {
             if (data.success === true) {
                 return data?.data
             } else {
-                console.log(data)
                 return null
             }
         }
@@ -158,18 +164,25 @@ const Item = ({ restaurantId, setloading }) => {
     const handleOpenDialog = (item) => {
         setDialogOpen(true);
         setselectedRestaurantItem(item);
-    };
 
+    };
+    const handleEditOpenDialog = (item) => {                                   // handling edit button of a item 
+        seteditdialogOpen(true)
+        setselectedRestaurantItem(item);
+
+    }
+    const handleEditCloseDialog = () => {                                      // for close the edit form of the item
+        seteditdialogOpen(false)
+        fetchRestaurantItems()
+    }
     const handleCloseDialog = () => {
         setDialogOpen(false);
-        setselectedRestaurantItem(null);
     };
 
     const handleConfirm = () => {
         handleDeleteRestaurantItem()
         fetchRestaurantItems()
         setDialogOpen(false);
-        setselectedRestaurantItem(null);
     };
 
     return (
@@ -181,6 +194,11 @@ const Item = ({ restaurantId, setloading }) => {
                     onConfirm={handleConfirm}
                     title="Delete Restaurant"
                     content="Are you sure you want to perform this action?"
+                />
+                <EditDialog open={editdialogOpen}
+                    onClose={handleEditCloseDialog}
+                    Item={selectedRestaurantItem}
+                    setItem={setselectedRestaurantItem}
                 />
                 <h6 className='fw-bold'>Items</h6>
                 <Box sx={{ width: '100%', typography: 'body1' }}>
@@ -195,62 +213,55 @@ const Item = ({ restaurantId, setloading }) => {
                             <div className='row'>
                                 <div class={`${editflag ? 'col-xxl-6' : 'col-xxl-12'} mb-3 pl-md-2`}>
                                     <div className='row'>
-                                        {
-                                            restaurantItems.map((item, index) => (
-                                                <div class={`col-md-6 ${editflag ? 'col-xxl-6' : 'col-xxl-3'} mb-3 pl-md-2`}>
-                                                    <div class="card h-md-100">
-                                                        <div class="card-header d-flex flex-between-center pb-0">
-                                                            <h6 class="mb-0 fw-bold">{item.name}</h6>
-                                                            <div>
-                                                                <IconButton aria-label="delete" size="small" onClick={() => handleOpenDialog(item)}>
-                                                                    <DeleteIcon className='text-danger' />
-                                                                </IconButton>
-                                                                <IconButton aria-label="delete" size="small">
-                                                                    <EditIcon className='text-primary' onClick={() => { seteditflag(true); setselectedRestaurantItem(item) }} />
-                                                                </IconButton>
-                                                            </div>
+                                        <div class="card-body p-0">
+                                            <div class="falcon-data-table">
+                                                <table class="table table-sm mb-0 table-striped table-dashboard fs--1 data-table border-bottom border-200" data-options='{"searching":false,"responsive":false,"info":false,"lengthChange":false,"sWrapper":"falcon-data-table-wrapper","dom":"<&#39;row mx-1&#39;<&#39;col-sm-12 col-md-6&#39;l><&#39;col-sm-12 col-md-6&#39;f>><&#39;table-responsive&#39;tr><&#39;row no-gutters px-1 py-3 align-items-center justify-content-center&#39;<&#39;col-auto&#39;p>>","language":{"paginate":{"next":"<span class=\"fas fa-chevron-right\"></span>","previous":"<span class=\"fas fa-chevron-left\"></span>"}}}'>
+                                                    <thead class="bg-200 text-900">
+                                                        <tr>
+                                                            <th class="py-2 align-middle whitespace-nowrap flex items-center m">Name</th>
+                                                            <th class="align-middle sort">Description</th>
+                                                            <th class="align-middle sort ">Price</th>
+                                                            <th class="align-middle sort text-center">Active</th>
+                                                            <th class="no-sort">Actions</th>
+                                                        </tr>
+                                                    </thead>
 
-                                                        </div>
-                                                        <div class="card-body pt-2">
-                                                            <div class="row no-gutters h-100 align-items-center">
-                                                                <div class="col">
-                                                                    <div class="media align-items-center"><img class="mr-3" src="../assets/img/icons/weather-icon.png" alt="" height="60" />
-                                                                        <div class="media-body">
-                                                                            <ImageListItem key={item.image}>
-                                                                                <img
-                                                                                    srcSet={`${item.image}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                                                                                    src={`${item.image}?w=248&fit=crop&auto=format`}
-                                                                                    alt={item.title}
-                                                                                    loading="lazy"
-                                                                                />
-                                                                            </ImageListItem>
+
+
+                                                    <tbody id="restaurants">
+                                                        {
+                                                            restaurantItems.map((item) => (
+                                                                <tr class="btn-reveal-trigger">
+                                                                    <td class="py-2 align-middle whitespace-nowrap flex items-center">
+                                                                        <img src={item.image} height={'75px'} width={'75px'} class='mr-3' />
+                                                                        <strong>{item.name}</strong>
+                                                                    </td>
+                                                                    <td class="py-2 align-middle">{item.description}</td>
+                                                                    <td class="py-2 align-middle">{item.price}</td>
+                                                                    <td class="py-2 align-middle text-center fs-0 font-weight-medium">
+                                                                        {item.isActive ? <span class="badge badge-success rounded-pill d-inline">Active</span> :
+                                                                            <span class="badge badge-danger rounded-pill d-inline">Not Active</span>
+                                                                        }</td>
+                                                                    <td class="py-2 align-middle white-space-nowrap">
+                                                                        <div class="dropdown">
+                                                                            <IconButton aria-label="Edit" size="small" onClick={() => { handleEditOpenDialog(item) }} >
+                                                                                <EditIcon fontSize="small" />
+                                                                            </IconButton>
+                                                                            <IconButton aria-label="delete" size="small">
+                                                                                <DeleteIcon className='text-danger' onClick={() => { handleOpenDialog(item) }} />
+                                                                            </IconButton>
                                                                         </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-auto pl-2">
-                                                                    <div class="fs-4 font-weight-normal text-sans-serif text-primary mb-1 line-height-1">₹ {item.price}</div>
-                                                                    <div class="fs--1 text-800">
-                                                                        <FormControlLabel
-                                                                            control={
-                                                                                <Switch
-                                                                                    size="small"
-                                                                                    label="Active"
-                                                                                    name='isActive'
-                                                                                    checked={item.isActive}
-                                                                                    onChange={(e) => onChangeForm(e)}
-                                                                                    value={item.isActive ? "off" : "on"}
-                                                                                    inputProps={{ 'aria-label': 'controlled' }}
-                                                                                />
-                                                                            }
-                                                                            label="Active"
-                                                                        /></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        }
+                                                                    </td>
+                                                                </tr>
+                                                            ))
+                                                        }
+
+                                                    </tbody>
+                                                </table>
+
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                                 {editflag ?
@@ -267,9 +278,9 @@ const Item = ({ restaurantId, setloading }) => {
                                                             label="Name"
                                                             size="small"
                                                             name='name'
-                                                            value={selectedRestaurantItem.name}
+                                                            value={restauranItemtPayload.name}
                                                             fullWidth
-                                                            onChange={(e) => onChangeForm(e)}
+                                                            onChange={(e) => onChangeForm(e, setselectedRestaurantItem)}
                                                             InputProps={{ sx: { borderRadius: 0 } }}
                                                         />
                                                     </Grid>
@@ -277,7 +288,8 @@ const Item = ({ restaurantId, setloading }) => {
                                                         <TextField
                                                             label="Description"
                                                             size="small"
-                                                            name='name'
+                                                            name='description'
+                                                            value={restauranItemtPayload.description}
                                                             rows={4}
                                                             multiline
                                                             fullWidth
@@ -290,6 +302,7 @@ const Item = ({ restaurantId, setloading }) => {
                                                             label="Price"
                                                             size="small"
                                                             name='price'
+                                                            value={restauranItemtPayload.price}
                                                             fullWidth
                                                             onChange={(e) => onChangeForm(e)}
                                                             InputProps={{ sx: { borderRadius: 0 } }}
@@ -407,7 +420,7 @@ const Item = ({ restaurantId, setloading }) => {
                                     <TextField
                                         label="Description"
                                         size="small"
-                                        name='name'
+                                        name='description'
                                         rows={4}
                                         multiline
                                         fullWidth
@@ -420,6 +433,7 @@ const Item = ({ restaurantId, setloading }) => {
                                         label="Price"
                                         size="small"
                                         name='price'
+                                        value={price}
                                         fullWidth
                                         onChange={(e) => onChangeForm(e)}
                                         InputProps={{ sx: { borderRadius: 0 } }}

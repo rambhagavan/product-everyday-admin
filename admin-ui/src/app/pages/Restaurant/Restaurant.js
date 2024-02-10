@@ -146,7 +146,6 @@ const Restaurant = () => {
     setloading(true);
     if (bulkaction === "delete") {
       const url = BACKEND_URL + '/restaurant/bulk'
-      console.log(listOfIds)
       let payload = {
         listOfIds: listOfIds,
         operation: 'delete'

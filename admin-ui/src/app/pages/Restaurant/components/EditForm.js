@@ -19,7 +19,7 @@ import { getPublicIdFromImageUrl } from '../../../core/utils';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import AddIcon from '@mui/icons-material/Add';
-import RestaurantItem  from './Item';
+import RestaurantItem from './Item';
 
 
 const EditForm = ({ restaurant, setloading, fetchAllRestaurants }) => {
@@ -46,7 +46,6 @@ const EditForm = ({ restaurant, setloading, fetchAllRestaurants }) => {
     const handleUpdateRestaurant = async () => {
         setloading(true);
         const deletedimage = await handleDeleteImage()
-        console.log(deletedimage)
         const image_data = await handleImageUpload()
         let payload = restaurantPayload
         if (selectedFiles && !image_data) {
@@ -79,7 +78,6 @@ const EditForm = ({ restaurant, setloading, fetchAllRestaurants }) => {
             if (data.success === true) {
                 return data?.data
             } else {
-                console.log(data)
                 return null
             }
         }
@@ -93,7 +91,6 @@ const EditForm = ({ restaurant, setloading, fetchAllRestaurants }) => {
             if (data.success === true) {
                 return true
             } else {
-                console.log(data)
                 return false
             }
         }
@@ -110,7 +107,7 @@ const EditForm = ({ restaurant, setloading, fetchAllRestaurants }) => {
                         name='name'
                         fullWidth
                         value={restaurantPayload.name}
-                        
+
                     />
                 </Grid>
                 <Grid item xs={12}>
@@ -271,7 +268,7 @@ const EditForm = ({ restaurant, setloading, fetchAllRestaurants }) => {
 
             </Grid>
             <hr />
-            <RestaurantItem restaurantId={restaurant._id} setloading={setloading}/>
+            <RestaurantItem restaurantId={restaurant._id} setloading={setloading} />
         </Fragment>
     )
 }
