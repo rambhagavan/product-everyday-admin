@@ -8,24 +8,24 @@ const create = async (req, res) => {
         const user = req.auth.email
         const name = req.body.name;
         const description = req.body.description;
-
+         
         if (!description || !name) {
             return res.status(400).send(
                 errorResponse(400, null, 'Description/Name is Missing')
             );
         }
-
+     
         const foundRestaurant = await Restaurant.findOne({ user,name });
-
+       
         if (foundRestaurant) {
             return res.status(400).send(
                 errorResponse(400, null, 'This User Restaurant is already in use.')
             );
         }
-
+        
         let data = req.body
         data['user'] = req.auth.email
-
+        console.log(data);
         const restaurant = new Restaurant(data);
 
         const savedRestaurant = await restaurant.save();
@@ -49,7 +49,7 @@ const read = async (req, res) => {
         const restaurantId = req.params.id;
 
         const restaurantDoc = await Restaurant.findOne({ _id: restaurantId })
-
+    
         if (!restaurantDoc) {
             return res.status(404).send(
                 errorResponse(404, null, 'No Restaurant found.')
@@ -151,7 +151,7 @@ const update = async (req, res) => {
         const update = req.body;
         const query = { _id: restaurantId };
         const restaurantDoc = await Restaurant.findOne(query)
-
+        
         if (!restaurantDoc) {
             return res.status(404).send(
                 errorResponse(404, null, 'No Restaurant found.')
@@ -182,6 +182,7 @@ const search = async (req, res) => {
             limit = 10,
             q = null
         } = req.query;
+        
         let restaurants = null;
         const restaurantsCount = (await Restaurant.find({}));
         const count = restaurantsCount.length;

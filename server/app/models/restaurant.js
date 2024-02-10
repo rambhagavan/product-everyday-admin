@@ -18,6 +18,30 @@ const RestaurantSchema = new Schema({
     trim: true,
     required: true
   },
+  panNumber: {
+    type: String,
+    trime: true,
+  },
+  aadharNumber: {
+     type: String,
+     trime: true
+  },
+  accountNumber: {
+    type: String,
+    trime: true
+  },
+  ifscCode: {
+     type:String,
+     trime: true
+  },
+  fssaiRegistrationNumber:{
+    type: String,
+    trime: true
+  },
+  contactNumber:{
+    type:String,
+    trime: true
+  },
   rating: {
     type: Number,
     maxLength: 2

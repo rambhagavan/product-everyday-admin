@@ -6,9 +6,8 @@ const logger = require('../core/logger');
 const create = async (req, res) => {
     try {
         const restaurantItem = new RestaurantItem(req.body);
-
         const savedRestaurantItem = await restaurantItem.save();
-
+  
         res.status(200).send(
             successResponse(200, savedRestaurantItem, `RestaurantItem has been added successfully!`)
         );
@@ -27,9 +26,9 @@ const create = async (req, res) => {
 const read = async (req, res) => {
     try {
         const restaurantItemId = req.params.id;
-
+         
         const restaurantItemDoc = await RestaurantItem.findOne({ _id: restaurantItemId })
-
+       
         if (!restaurantItemDoc) {
             return res.status(404).send(
                 errorResponse(404, null, 'No RestaurantItem found.')
@@ -130,13 +129,13 @@ const listRestaurantItem = async (req, res) => {
         const paginateQuery = [
             // { $sort: sortOrder },
             { $skip: size * limit },
-            { $limit: limit * 1 },
+            // { $limit: 1 * 1 },
             {
                 $match: { restaurantId: restaurantId }
             }
         ];
 
-        restaurantItems = await RestaurantItem.aggregate(paginateQuery);
+      restaurantItems = await RestaurantItem.aggregate(paginateQuery);
         res.status(200).send(
             successResponse(
                 200,
@@ -176,7 +175,7 @@ const update = async (req, res) => {
         const update = req.body;
         const query = { _id: restaurantItemId };
         const restaurantItemDoc = await RestaurantItem.findOne(query)
-
+        
         if (!restaurantItemDoc) {
             return res.status(404).send(
                 errorResponse(404, null, 'No RestaurantItem found.')
