@@ -7,6 +7,9 @@ import AccessForbidden from '../pages/403AccessForbidden/AccessForbidden';
 
 const NotFound = Loadable(lazy(() => import('../pages/404NotFound/PageNotFound')));
 const Login = Loadable(lazy(() => import('../pages/Authentication/JwtLogin')));
+const Register = Loadable(lazy(() => import('../pages/Authentication/Register')));
+const VerificationPending = Loadable(lazy(() => import('../pages/Authentication/VerifyEmail')));
+const Verificationpage = Loadable(lazy(() => import('../pages/Authentication/verificationPending')));
 
 // dashboard page
 const Dashboard = Loadable(lazy(() => import('../pages/Dashboard/Dashboard')));
@@ -55,6 +58,10 @@ const routes = [
     { path: '/session/404', element: <NotFound /> },
     { path: '/session/403', element: <AccessForbidden /> },
     { path: '/session/signin', element: <Login /> },
+    { path: '/verification', element: <VerificationPending /> },
+    { path: '/verify', element: <Verificationpage /> },
+
+    { path: '/session/signup', element: <Register /> },
     { path: '/logout', element: <Logout><Login /></Logout> },
     { path: '*', element: <AppLayout><NotFound /></AppLayout> }
 ];

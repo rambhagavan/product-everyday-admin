@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 
-// Bring in Models & Helpers
+// Bring in Models & Helperspp
 const authController = require('../../controllers/auth');
 const checkAuth = require('../../middleware/auth');
 const config = require('../../core/configs');
@@ -15,7 +15,9 @@ router.post('/register', async (req, res) => {
   return authController.register(req, res)
 });
 
-router.get('/email/verify/', async (req, res) => {
+// router.post("/verify-email",verifyEmail);
+
+router.post('/verify-email', async (req, res) => {
   return authController.verifyEmail(req, res)
 });
 

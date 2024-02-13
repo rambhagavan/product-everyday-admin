@@ -1,11 +1,15 @@
 const bcrypt = require('bcryptjs');
-
+const crypto=require("crypto");
 const User = require('../models/user');
 const mailservice = require('../services/email');
 const { EMAIL_PROVIDER } = require('../constants');
 const logger = require('../core/logger');
 const { errorResponse, successResponse } = require('../core/response');
 const { createJWTAccessToken, decodeDataFromJWTToken } = require('../utils/utils');
+const sgMail = require('@sendgrid/mail');
+const { sendVerificationMail} = require('../utils/sendVerificationMail');
+
+sgMail.setApiKey('YOUR_SENDGRID_API_KEY');
 
 const login = async (req, res) => {
     try {
@@ -79,7 +83,7 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
     try {
-        const { email, firstName, lastName, password } = req.body;
+        const { email, firstName, lastName, password,phone } = req.body;
 
         if (!email) {
             return res.status(400).send(
@@ -98,6 +102,11 @@ const register = async (req, res) => {
                 errorResponse(400, null, 'You must enter a password.')
             );
         }
+        if (!phone) {
+            return res.status(400).send(
+                errorResponse(400, null, 'You must enter a phone number.')
+            );
+        }
 
         const existingUser = await User.findOne({ email });
 
@@ -106,18 +115,36 @@ const register = async (req, res) => {
                 errorResponse(400, null, 'The email address is already in use')
             );
         }
+        // new code added
+          
+          
+
+
+
+
+
+        //new code added
+
+const emailToken = crypto.randomBytes(64).toString("hex")
 
         const user = new User({
             email,
             password,
             firstName,
-            lastName
+            lastName,
+            phone,
+            emailToken
+           // verified: false
         });
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(user.password, salt);
 
         user.password = hash;
         const registeredUser = await user.save();
+
+        sendVerificationMail(user);
+
+     
 
         const payload = {
             id: registeredUser.id,
@@ -126,12 +153,12 @@ const register = async (req, res) => {
 
         const token = createJWTAccessToken(payload)
 
-        await mailservice.sendEmail(
-            registeredUser.email,
-            'signup',
-            null,
-            { registeredUser, token }
-        );
+        // await mailservice.sendEmail(
+        //     registeredUser.email,
+        //     'signup',
+        //     null,
+        //     { registeredUser, token }
+        // );
 
         const data = {
             tokenType: 'Bearer',
@@ -141,7 +168,10 @@ const register = async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
-                role: user.role
+                phone: user.phone,
+                role: user.role,
+                verified:user.verified,
+                emailToken : user.emailToken
             }
         }
 
@@ -154,39 +184,140 @@ const register = async (req, res) => {
             errorResponse(400, err, "Your request can't be processed. Please try again!")
         );
     }
+
+
+    // try {
+    //     await sendVerificationEmail(email);
+    //     res.status(200).json({ message: 'Registration successful. Check your email for verification.' });
+    //   } catch (error) {
+    //     console.error('Error sending verification email:', error);
+    //     res.status(500).json({ message: 'Internal server error.' });
+    //   }
 }
+
+
+
+
+
+// const sendVerificationEmail= async ({_id,email},res)=>{
+
+//     try{
+//         const otp= $(Math.floor(1000+Math.random()*9000));
+//         const mailOptions={
+//         from: process.env.AUTH_EMAIL,
+//         to: email,
+//         subject:" Verify your Email",
+//         html: <p>Enter <b>${otp}</b> in the app to verify your email address</p>
+
+
+//         };
+
+//         const saltRounds=10;
+
+//         const hotp=await bcrypt.hash(otp,saltRounds);
+//         const newOTPVerification= await new UserOTPVerification({
+//             userId=_id,
+//             otp: hotp,
+//             createdAt: Date.now(),
+//             expiresAt: Date.now()+3600000,
+//         });
+//         await newOTPVerification.save();
+//         await WebTransportError.sendMail(mailOptions);
+//         res.json({
+//             status: "Pending",
+//             message:"Verification otp email sent",
+//             data:{
+//                 userId:_id,
+//                 email,
+//             }
+//         })
+//     } catch (error) {
+//         res.json({
+//             status: "Failed",
+//             message:"error",
+
+//            }
+//     }
+// }
+
+
+// async function sendVerificationEmail(email) {
+//     const msg = {
+//       to: email,
+//       from: 'Admin@ped.com', // Replace with your sender email address
+//       subject: 'Verify Your Email',
+//       text: 'Please click the following link to verify your email:',
+//       html: '<strong>Please click the following link to verify your email:</strong> <a href="YOUR_VERIFICATION_LINK">Verify</a>',
+//     };
+  
+//     await sgMail.send(msg);
+//   }
 
 const verifyEmail = async (req, res) => {
     try {
-        if (!req.query.token) {
+
+        const emailToken=req.body.emailToken;
+        // console.log(emailToken)
+
+        if (emailToken === null) {
+            
             return res.status(400).send(
-                errorResponse(400, null, "Token is required!")
+                errorResponse(400, emailToken, "EmailToken not found......!")
             )
         }
-        const token = req.query.token
-        const data = decodeDataFromJWTToken(token)
-        if (!data) {
-            return res.status(400).send(
-                errorResponse(400, null, "Invalid Token!")
-            )
-        }
-        const email = data.email
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).send(
-                errorResponse(404, null, `User with the specified email not found`)
-            );
-        }
-        user.active = true
-        user.verified = true
-        const savedUser = await user.save()
-        res.status(200).send(
-            successResponse(200, null, "Email verified successfully!")
-        )
-    } catch (err) {
-        logger.fatal(err)
+
+        const user=await User.findOne({emailToken});
+
+        if(user){
+            user.emailToken=null;
+            user.verified=true;
+
+            await user.save();
+
+            //const token = req.query.token
+            // const token=createToken(user._id);
+            const payload = {
+                id: user._id,
+                email: user.email
+            };
+        const token = createJWTAccessToken(payload)
+
+
+            res.status(200).json({
+                _id:user._id,
+                email:user.email,
+                token,
+                verified: user?.verified,
+
+            });
+
+        }else res.status(404).json("Email verification failed, invalid token!");
+    }
+    //     const token = req.query.token
+    //     const data = decodeDataFromJWTToken(token)
+    //     if (!data) {
+    //         return res.status(400).send(
+    //             errorResponse(400, null, "Invalid Token!")
+    //         )
+    //     }
+    //     const email = data.email
+    //     //const user = await User.findOne({ email });
+    //     if (!user) {
+    //         return res.status(404).send(
+    //             errorResponse(404, null, `User with the specified email not found`)
+    //         );
+    //     }
+    //     user.active = true
+    //     user.verified = true
+    //     const savedUser = await user.save()
+    //     res.status(200).send(
+    //         successResponse(200, null, "Email verified successfully!")
+    //     )
+    // } catch (err) {
+    catch (err) {    
+    logger.fatal(err)
         res.status(500).send(
-            errorResponse(500, err, "Your request can't be processed. Please try again!")
+            errorResponse(500, err, "Your request can't be processed. Please try try again!")
         );
     }
 

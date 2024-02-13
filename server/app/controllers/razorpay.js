@@ -3,8 +3,8 @@ const { successResponse, errorResponse } = require('../core/response');
 const logger = require('../core/logger');
 const config = require('../core/configs');
 
-const Razorpay = require('razorpay');
-var razorpayClient = new Razorpay({ key_id: config.razorpay.accessKeyId, key_secret: config.razorpay.secretAccessKey })
+// const Razorpay = require('razorpay');
+// var razorpayClient = new Razorpay({ key_id: config.razorpay.accessKeyId, key_secret: config.razorpay.secretAccessKey })
 
 const createCustomer = async (req, res) => {
     try {
