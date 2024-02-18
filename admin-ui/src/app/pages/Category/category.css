@@ -1,0 +1,5 @@
+.hover-effect:hover {
+    cursor: pointer;
+    background-color: #e0e0e0;
+    /* Add any other styles for the hover effect */
+  }

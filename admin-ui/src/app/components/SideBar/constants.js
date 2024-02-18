@@ -98,4 +98,5 @@ export const sideBarItems = [
         label: 'Log Out',
         route: '/logout',
     },
+   
 ]

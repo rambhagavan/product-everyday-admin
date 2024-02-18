@@ -33,7 +33,7 @@ const createPayload = {
   category: "",
 };
 
-const CreateForm = ({ setloading, fetchAllProducts }) => {
+const CreateForm = ({ setloading, fetchAllProducts ,categoryName, categoryProduct }) => {
   const dispatch = useDispatch();
 
   const [productPayload, setproductPayload] = useState(createPayload);
@@ -207,7 +207,8 @@ const CreateForm = ({ setloading, fetchAllProducts }) => {
               onChange={(e) => onChangeForm(e)}
               displayEmpty
             >
-              {categories.map((categoryName) => (
+              {(categoryProduct)? 
+              <MenuItem key={categoryName} value={categoryName}> {categoryName}</MenuItem> :categories.map((categoryName) => (
                 <MenuItem key={categoryName.id} value={categoryName.name}>
                   {categoryName.name}
                 </MenuItem>

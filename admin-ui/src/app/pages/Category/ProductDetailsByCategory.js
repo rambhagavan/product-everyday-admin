@@ -1,39 +1,44 @@
 import React, { Fragment, useState, useEffect } from "react";
-import CategoryCreateForm from "./components/CategoryCreateForm";
+import CreateForm from "../Product/components/CreateForm";
 import { showSnackBar } from "../../redux/actions/snackBarActions";
 import TopSpinner from "../../components/Spinner/TopSpinner";
 import { useDispatch } from "react-redux";
 import { ContentBox } from "../../styles/AppStyles";
 import { post, get, remove } from "../../services/Common";
 import { BACKEND_URL } from "../../core/constants";
-import CategoryEditForm from "./components/CategoryEditForm";
+import EditForm from "../Product/components/EditForm";
 import ConfirmDialog from "../../components/Dialogs/ConfirmDialog";
 import { Pagination } from "antd";
 import { Input, Space } from "antd";
+import { useSelector } from "react-redux";
 import { addCategoryList } from "../../redux/actions/categoryListDataActions";
-import './category.css'
-import { Link } from "react-router-dom";
-
+import { useParams } from "react-router-dom";
 
 const { Search } = Input;
 
-const CategoryList = () => {
+const ProductDetailsByCategory = () => {
   const dispatch = useDispatch();
   const [toggleNew, settoggleNew] = useState("list");
-  const [categories, setcategories] = useState([]);
+  const [products, setproducts] = useState([]);
   const [bulkselected, setbulkselected] = useState([]);
-  const [totalcategories, settotalcategories] = useState(0);
+  const [totalproducts, settotalproducts] = useState(0);
   const [loading, setloading] = useState(false);
-  const [selectedCategory, setselectedCategory] = useState(null);
+  const [selectedProduct, setselectedProduct] = useState(null);
   const [searchvalue, setsearchvalue] = useState(null);
   const [current, setCurrent] = useState(3);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkaction, setbulkaction] = useState(null);
-  const [isHovered, setIsHovered] = useState(false);
+  const [sortBy, setSortBy] = useState();
+  const { categoryName } = useParams();
+  const [categoryProduct ,setcategoryProduct]=useState(false);
 
   useEffect(() => {
-    fetchAllCategories();
-  }, []);
+    fetchAllProducts();
+  }, [sortBy]);
+
+  const handleSort = (sortType) => {
+    setSortBy(sortType);
+  };
 
   const resetStates = () => {
     setbulkselected([]);
@@ -46,12 +51,15 @@ const CategoryList = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAllCategories();
+  }, []);
+
   const fetchAllCategories = async (
     sortOrder = false,
     page = 1,
     limit = 10
   ) => {
-    setloading(true);
     const url = BACKEND_URL + "/category";
     const params = {
       sortOrder: sortOrder,
@@ -60,54 +68,95 @@ const CategoryList = () => {
     };
 
     const data = await get(url, params);
-    if (data && data?.success === true) {
-      setcategories(data?.data?.categories);
-      settotalcategories(data?.data?.count);
 
-      // dispatch(addCategoryList(data))
-      dispatch(showSnackBar({ msg: "Get Category Success", type: "success" }));
+    if (data && data?.success === true) {
+      console.log(data);
+      dispatch(addCategoryList(data));
+    }
+  };
+
+  const fetchAllProducts = async (sortOrder = false, page = 1, limit = 10) => {
+    setloading(true);
+
+    let url;
+    let params;
+
+    if (sortBy === "high-to-low" || sortBy === "low-to-high") {
+      url = BACKEND_URL + "/product/priceFilter";
+      params = {
+        priceSort: sortBy,
+        page: page,
+        limit: limit,
+        category: categoryName,
+      };
+    } else if(sortBy==="asc" || sortBy==="desc")
+    {
+     url = BACKEND_URL + "/product";
+     params = {
+       sortOrder: sortBy,
+       page: page,
+       limit: limit,
+       category: categoryName,
+     };
+   }
+     else {
+      url = BACKEND_URL + "/product/priceFilter";
+      params = {
+        page: page,
+        limit: limit,
+        category: categoryName,
+      };
+    }
+
+    const data = await get(url, params);
+
+    if (data && data?.success === true) {
+      setproducts(data?.data?.products);
+      settotalproducts(data?.data?.count);
+      dispatch(showSnackBar({ msg: "Get Product Success", type: "success" }));
     } else {
       dispatch(
         showSnackBar({
-          msg: `Get Category Fail ${data.exception_reason}`,
+          msg: `Get Product Fail ${data.exception_reason}`,
           type: "error",
         })
       );
     }
+
     resetStates();
     setloading(false);
   };
 
   const handleOpenDialog = (product) => {
     setDialogOpen(true);
-    setselectedCategory(product);
+    setselectedProduct(product);
   };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
-    setselectedCategory(null);
+    setselectedProduct(null);
   };
 
   const handleConfirm = () => {
     deleteProduct();
-    fetchAllCategories();
+    fetchAllProducts();
     setDialogOpen(false);
-    setselectedCategory(null);
+    setselectedProduct(null);
   };
 
   const deleteProduct = async () => {
     setloading(true);
-    const url = BACKEND_URL + "/category/" + selectedCategory?._id;
+    const url = BACKEND_URL + "/product/" + selectedProduct?._id;
     const data = await remove(url);
     if (data && data?.success === true) {
-      fetchAllCategories();
+      fetchAllProducts();
       dispatch(
-        showSnackBar({ msg: "Delete Category Success", type: "success" })
+        showSnackBar({ msg: "Delete Product Success", type: "success" })
       );
     } else {
       dispatch(
         showSnackBar({
-          msg: `Delete Category Fail ${data.exception_reason}`,
+          msg: `Delete Product Fail ${data.exception_reason}`,
           type: "error",
         })
       );
@@ -115,7 +164,7 @@ const CategoryList = () => {
     setloading(false);
   };
   const handleChangePage = (page, pageSize) => {
-    fetchAllCategories(false, page, 10);
+    fetchAllProducts(false, page, 10);
     setCurrent(page);
   };
 
@@ -126,7 +175,7 @@ const CategoryList = () => {
       for (let i = 0; i < ele.length; i++) {
         if (ele[i].type === "checkbox") ele[i].checked = true;
       }
-      setbulkselected(categories);
+      setbulkselected(products);
     } else {
       let ele = document.getElementsByName("child_checkbox");
       for (var i = 0; i < ele.length; i++) {
@@ -145,14 +194,15 @@ const CategoryList = () => {
     }
   };
 
-  const handleEdit = (catgory) => {
+  const handleEdit = (product) => {
     settoggleNew("edit");
-    setselectedCategory(catgory);
+    setselectedProduct(product);
     resetStates();
   };
 
   const handleNew = () => {
     settoggleNew("new");
+    setcategoryProduct(true);
     resetStates();
   };
 
@@ -163,7 +213,7 @@ const CategoryList = () => {
     }
     setloading(true);
     if (bulkaction === "delete") {
-      const url = BACKEND_URL + "/category/bulk";
+      const url = BACKEND_URL + "/product/bulk";
       console.log(listOfIds);
       let payload = {
         listOfIds: listOfIds,
@@ -180,9 +230,9 @@ const CategoryList = () => {
           })
         );
       }
-      fetchAllCategories();
+      fetchAllProducts();
     } else if (bulkaction === "active") {
-      const url = BACKEND_URL + "/category/bulk";
+      const url = BACKEND_URL + "/product/bulk";
       let payload = {
         listOfIds: listOfIds,
         operation: "update",
@@ -201,9 +251,9 @@ const CategoryList = () => {
           })
         );
       }
-      fetchAllCategories();
+      fetchAllProducts();
     } else if (bulkaction === "inactive") {
-      const url = BACKEND_URL + "/category/bulk";
+      const url = BACKEND_URL + "/product/bulk";
       let payload = {
         listOfIds: listOfIds,
         operation: "update",
@@ -222,7 +272,7 @@ const CategoryList = () => {
           })
         );
       }
-      fetchAllCategories();
+      fetchAllProducts();
     }
     setloading(false);
   };
@@ -230,7 +280,7 @@ const CategoryList = () => {
   const onSearch = async (value, _e, info) => {
     setsearchvalue(value);
     setloading(true);
-    const url = BACKEND_URL + "/category/search";
+    const url = BACKEND_URL + "/product/search";
     const params = {
       page: 1,
       limit: 10,
@@ -238,13 +288,13 @@ const CategoryList = () => {
     };
     const data = await get(url, params);
     if (data && data?.success === true) {
-      setcategories(data?.data?.categories);
-      settotalcategories(data?.data?.count);
-      dispatch(showSnackBar({ msg: "Get Category Success", type: "success" }));
+      setproducts(data?.data?.products);
+      settotalproducts(data?.data?.count);
+      dispatch(showSnackBar({ msg: "Get Product Success", type: "success" }));
     } else {
       dispatch(
         showSnackBar({
-          msg: `Get Category Fail ${data.exception_reason}`,
+          msg: `Get Product Fail ${data.exception_reason}`,
           type: "error",
         })
       );
@@ -253,31 +303,7 @@ const CategoryList = () => {
     setloading(false);
   };
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
-
-  const renderDescription = (description) => {
-    if (isHovered) {
-      // Show full description on hover
-      return <span>{description}</span>;
-    } else {
-      // Show truncated description with limited words
-      const words = description.split(' ');
-      const truncatedDescription = words.slice(0, 20).join(' ');
-      return (
-        <span>
-          {truncatedDescription}
-          {words.length > 20 && '...'}
-        </span>
-      );
-    }
-  };
-
+ 
   return (
     <ContentBox>
       <TopSpinner open={loading} message={"Please Wait ..."} />
@@ -285,13 +311,17 @@ const CategoryList = () => {
         open={dialogOpen}
         onClose={handleCloseDialog}
         onConfirm={handleConfirm}
-        title="Delete Category"
+        title="Delete Product"
         content="Are you sure you want to perform this action?"
       />
       {toggleNew === "new" ? (
         <div>
           <div className="d-flex flex-row justify-content-between mb-4">
-            <h5 className="modal-title fw-bolder">Create Category</h5>
+             
+            <h5 className="modal-title fw-bolder">
+            {categoryProduct? `Create Product of ${categoryName}` : "Create Product"}
+            </h5>
+          
             <button
               type="button"
               class="btn-close"
@@ -300,16 +330,18 @@ const CategoryList = () => {
               onClick={() => settoggleNew("list")}
             ></button>
           </div>
-          <CategoryCreateForm
+          <CreateForm
             setloading={setloading}
-            fetchAllCategories={fetchAllCategories}
+            categoryName={categoryName}
+            categoryProduct={categoryProduct}
+            fetchAllProducts={fetchAllProducts}
           />
         </div>
       ) : toggleNew === "edit" ? (
         <div>
           <div className="d-flex flex-row justify-content-between mb-4">
             <h5 class="modal-title fw-bolder" id="exampleModalLabel">
-              Edit Category
+              Edit Product
             </h5>
             <button
               type="button"
@@ -319,10 +351,10 @@ const CategoryList = () => {
               onClick={() => settoggleNew("list")}
             ></button>
           </div>
-          <CategoryEditForm
-            category={selectedCategory}
+          <EditForm
+            product={selectedProduct}
             setloading={setloading}
-            fetchAllCategories={fetchAllCategories}
+            fetchAllProducts={fetchAllProducts}
           />
         </div>
       ) : (
@@ -331,10 +363,11 @@ const CategoryList = () => {
             <div class="row align-items-center justify-content-between">
               <div class="col-2 col-sm-auto d-flex align-items-center pr-0">
                 <h5 class="fs-0 mb-0 text-nowrap py-2 py-xl-0 me-2 fw-bolder">
-                  Category
+                {categoryName}
                 </h5>
               </div>
-              <div class="col-4 col-sm-auto d-flex align-items-center pr-0">
+              
+              <div class="col-4 col-sm-auto d-flex align-items-center  justify-content-between pr-0">
                 <Search
                   placeholder="input search text"
                   onSearch={onSearch}
@@ -343,6 +376,8 @@ const CategoryList = () => {
                   }}
                 />
               </div>
+              
+
               <div class="col-6 col-sm-auto ml-auto text-right pl-0">
                 {bulkselected.length > 0 ? (
                   <div class="d-flex" id="orders-actions">
@@ -381,13 +416,78 @@ const CategoryList = () => {
                     ></span>
                     <span class="d-none d-sm-inline-block ml-1">New</span>
                   </button>
-                  <button class="btn bg-warning btn-sm mx-2" type="button">
+
+                  <button
+                    class="btn bg-warning btn-sm mx-2"
+                    type="button"
+                    id={`dropdownbtn_`}
+                    data-mdb-toggle="dropdown"
+                    aria-expanded="false"
+                  >
                     <span
                       class="fas fa-filter"
                       data-fa-transform="shrink-3 down-2"
                     ></span>
                     <span class="d-none d-sm-inline-block ml-1">Filter</span>
                   </button>
+                  <ul class="dropdown-menu" aria-labelledby={`dropdownbtn_`}>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onClick={() => handleSort("low-to-high")}
+                      >
+                        Low to High
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onClick={() => handleSort("high-to-low")}
+                      >
+                        High to Low
+                      </a>
+                      <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onClick={() => handleSort("active")}
+                      >
+                        Active
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onClick={() => handleSort("non-active")}
+                      >
+                        Non-Active
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onClick={() => handleSort("asc")}
+                      >
+                        Sort(A-Z)
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onClick={() => handleSort("desc")}
+                      >
+                        Sort(Z-A)
+                      </a>
+                    </li>
+                    </li>
+                    {/* <li><a class="dropdown-item"  href="#" onClick={() => handleSort()} >sort(A-Z)</a></li> */}
+                  </ul>
+
                   <button class="btn bg-green btn-sm" type="button">
                     <span
                       class="fas fa-external-link-alt"
@@ -421,13 +521,15 @@ const CategoryList = () => {
                     </th>
                     <th class="align-middle sort">Name</th>
                     <th class="align-middle sort pr-7">Date Created</th>
-                    <th class="align-middle sort">Description</th>
+                    <th class="align-middle sort">SKU</th>
+                    <th class="align-middle sort">Quantity</th>
+                    <th class="align-middle sort">Price</th>
                     <th class="align-middle sort text-center">Active</th>
                     <th class="no-sort">Actions</th>
                   </tr>
                 </thead>
-                <tbody id="categories">
-                  {categories.map((item, index) => (
+                <tbody id="products">
+                  {products.map((item, index) => (
                     <tr class="btn-reveal-trigger">
                       <td class="py-2 align-middle">
                         <div class="custom-control custom-checkbox">
@@ -448,16 +550,22 @@ const CategoryList = () => {
                           width={"25px"}
                           className="me-2"
                         />
-                        <strong>{item.name}</strong>
+                        <strong>
+                          {String(item.name).length > 30
+                            ? String(item.name).substring(0, 30)
+                            : String(item.name).substring(
+                                0,
+                                String(item.name).length
+                              )}
+                        </strong>
                       </td>
                       <td class="py-2 align-middle">{item.created}</td>
-                      <td
-                          className="py-2 align-middle text-left fs-0 font-weight-medium hover-effect"
-                          onMouseEnter={handleMouseEnter}
-                          onMouseLeave={handleMouseLeave}
-                          key={item.id}
-                        >
-                      {renderDescription(item.description)}
+                      <td class="py-2 align-middle">{item.sku}</td>
+                      <td class="py-2 align-middle text-center fs-0 white-space-nowrap">
+                        {item.quantity}
+                      </td>
+                      <td class="py-2 align-middle text-right fs-0 font-weight-medium">
+                        ₹ {item.price}
                       </td>
                       <td class="py-2 align-middle text-center fs-0 font-weight-medium">
                         {item.isActive ? (
@@ -502,10 +610,6 @@ const CategoryList = () => {
                               >
                                 Delete
                               </a>
-                
-                            </li>
-                            <li class="dropdown-item">
-                            <Link to={`/ProductDetailsByCategory/${item.name}`}>View Products</Link>
                             </li>
                           </ul>
                         </div>
@@ -516,7 +620,7 @@ const CategoryList = () => {
               </table>
               <div className="text-center p-3">
                 <Pagination
-                  total={totalcategories}
+                  total={totalproducts}
                   showTotal={(total) => `Total ${total} items`}
                   defaultPageSize={10}
                   defaultCurrent={1}
@@ -531,4 +635,4 @@ const CategoryList = () => {
   );
 };
 
-export default CategoryList;
+export default ProductDetailsByCategory;

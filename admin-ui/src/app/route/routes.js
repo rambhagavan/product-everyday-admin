@@ -19,7 +19,7 @@ const Product = Loadable(lazy(() => import('../pages/Product/Product')));
 const Category = Loadable(lazy(() => import('../pages/Category/Category')));
 const Brand = Loadable(lazy(() => import('../pages/Brand/Brand')));
 const Test = Loadable(lazy(() => import('../pages/DummyTest/DummyTest')));
-
+const ProductDetails= Loadable(lazy (()=> import('../pages/Category/ProductDetailsByCategory')));
 const Logout = (props) => {
     const { children } = props
     localStorage.removeItem('Token')
@@ -56,6 +56,7 @@ const routes = [
     { path: '/session/403', element: <AccessForbidden /> },
     { path: '/session/signin', element: <Login /> },
     { path: '/logout', element: <Logout><Login /></Logout> },
+    { path : '/ProductDetailsByCategory/:categoryName',element: <AppLayout><ProductDetails/></AppLayout>},
     { path: '*', element: <AppLayout><NotFound /></AppLayout> }
 ];
 

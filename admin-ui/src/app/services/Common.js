@@ -70,6 +70,7 @@ export const get = async (url, params) => {
   // Append the serialized parameters to the URL
   url += "?" + searchParams.toString();
 
+  
   console.log(url);
 
   const response = await axios
