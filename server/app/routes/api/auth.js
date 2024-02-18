@@ -16,6 +16,7 @@ router.post('/register', async (req, res) => {
 });
 
 // router.post("/verify-email",verifyEmail);
+// verify email
 
 router.post('/verify-email', async (req, res) => {
   return authController.verifyEmail(req, res)

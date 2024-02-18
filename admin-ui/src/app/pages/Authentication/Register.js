@@ -1,84 +1,18 @@
-// import React, { useState} from 'react'
-// import { Image } from 'antd'
-// import { sendVerificationEmail } from '../../services/Auth/AdminAuth';
-// import axios from 'axios';
-
-// import {
-//     Link,
-//     useLocation,
-//     useNavigate,
-//     Navigate,
-//   } from "react-router-dom";
-
-// import {  adminGetCurrentUser ,adminRegisterService} from '../../services/Auth/AdminAuth'
-// import { useDispatch } from 'react-redux';
-
-
-
-// const Register = () => {
-
-//     let location = useLocation();
-//   const navigate = useNavigate()
-//   const [requestOtp, setrequestOtp] = useState(false)
-//   const [credentials, setCredentials] = useState({ 
-//     email: "",
-//     password: "" ,
-//     firstName:"", 
-//     lastName:"", 
-//     phone:""
-//    });
-//   const [error,setError] = useState(null)
-//   const dispatch = useDispatch()
-//   const handleRequestForOTP = () => {
-//     setrequestOtp(true)
-//   }
-//   const handleChange = (e) => {
-//     setCredentials({ ...credentials, [e.target.name]: e.target.value })
-//   }
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     //  console.log(credentials)
-//     try {
-       
-
-       
-
-      
-        
-//         // In your registration function after obtaining verificationToken
-        
-  
-
-
-//         const data = await adminRegisterService(credentials);
-
-//         navigate('/verification');
-
-//         // await sendVerificationEmail(credentials.email);
-       
-//         // console.log(data)
-//         // navigate('/signin')
-//         // console.log(data)
-//     } catch (error) {
-//         setError(error)
-//     }
-    
-//   }
-
 import React, { useState } from 'react';
 import { Image } from 'antd';
 import { sendVerificationEmail, adminRegisterService } from '../../services/Auth/AdminAuth';
 import { BACKEND_URL, headersConfig } from '../../core/constants'
 //import {image} from `../../../../public/assets/images/browsers/glogo.webp`
-
+// new register
 import {
   Link,
   useNavigate,
 } from 'react-router-dom';
 
+
+// for google auth redirect page
 const handleGoogleLogin = () => {
-    window.location.href = `${BACKEND_URL}/auth/google`;
+    window.open(`${BACKEND_URL}/auth/google`,"_self");
   };
 
 const Register = () => {

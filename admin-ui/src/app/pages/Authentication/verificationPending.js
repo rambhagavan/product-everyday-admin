@@ -22,3 +22,5 @@ const VerificationPending = () => {
 };
 
 export default VerificationPending;
+
+// pending page

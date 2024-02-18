@@ -6,8 +6,7 @@ import { BACKEND_URL, baseUrl, portRequest } from '../../core/constants'
 // import { base } from "../../../../../server/app/models/user";
 import { divide } from "lodash";
 import axios from "axios";
-// import React from "react";
-
+// to verify email
 
 const VerifyEmail=() => {
     const { user, updateUser }= useContext(AuthContext);

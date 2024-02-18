@@ -7,6 +7,7 @@ const VerificationLinkPage = () => {
 
   useEffect(() => {
     // Send a request to your backend to verify the token
+    //f
     // Update user record in the backend
   }, [token]);
 

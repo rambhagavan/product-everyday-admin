@@ -10,6 +10,7 @@ const Login = Loadable(lazy(() => import('../pages/Authentication/JwtLogin')));
 const Register = Loadable(lazy(() => import('../pages/Authentication/Register')));
 const VerificationPending = Loadable(lazy(() => import('../pages/Authentication/VerifyEmail')));
 const Verificationpage = Loadable(lazy(() => import('../pages/Authentication/verificationPending')));
+// changes routes
 
 // dashboard page
 const Dashboard = Loadable(lazy(() => import('../pages/Dashboard/Dashboard')));
