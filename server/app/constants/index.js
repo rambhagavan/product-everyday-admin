@@ -12,6 +12,11 @@ exports.MERCHANT_STATUS = {
   Waiting_Approval: 'Waiting Approval'
 };
 
+exports.FOOD_PREFERENCE={
+  NonVegetarian : 'Nonvegetarian',
+  Vegetarian : 'Vegetarian',
+};
+
 exports.ORDER_ITEM_STATUS = {
   Processing: 'Processing',
   Shipped: 'Shipped',

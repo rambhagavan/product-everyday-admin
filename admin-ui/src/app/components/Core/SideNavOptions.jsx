@@ -1,7 +1,8 @@
 import React from 'react'
 import Scrollbar from 'react-perfect-scrollbar';
 import { Box, List, ListItem, styled } from '@mui/material';
-import SideBarLink from '../SideBar/SideBarLink';
+
+import SideBarLink from '../SideBar/SideBarLink'
 import { sideBarItems } from '../SideBar/constants';
 
 const StyledScrollBar = styled(Scrollbar)(() => ({

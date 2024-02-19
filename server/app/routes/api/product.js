@@ -27,6 +27,14 @@ router.get('/search', async (req, res) => {
   productController.search(req, res);
 });
 
+router.get('/priceFilter',async (req,res)=>{
+  productController.priceFilter(req,res); 
+});
+// filter by categories wise and food preference wise
+router.post('/CategoryProduct', async (req, res) => {
+  productController.CategoryProduct(req, res);
+});
+
 router.post('/bulk', auth(), role.checkRole(ROLES.Admin), (req, res) => {
   productController.bulk(req, res);
 });
@@ -36,6 +44,7 @@ router.get('/:id', checkValidMongoDbId(), async (req, res) => {
   productController.read(req, res);
 });
 
+
 router.put('/:id', auth(), role.checkRole(ROLES.Admin), checkValidMongoDbId(), async (req, res) => {
   productController.update(req, res);
 });
@@ -43,7 +52,6 @@ router.put('/:id', auth(), role.checkRole(ROLES.Admin), checkValidMongoDbId(), a
 router.delete('/:id', auth(), role.checkRole(ROLES.Admin), checkValidMongoDbId(), async (req, res) => {
   productController.remove(req, res);
 });
-
 
 
 module.exports = router;

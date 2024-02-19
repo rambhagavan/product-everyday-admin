@@ -1,5 +1,6 @@
 const Mongoose = require('mongoose');
 const { Schema } = Mongoose;
+const { FOOD_PREFERENCE } = require('../constants/index.js');
 
 // Product Schema
 const ProductSchema = new Schema({
@@ -63,7 +64,12 @@ const ProductSchema = new Schema({
     type: Array,
     default: []
   },
-  variants: {
+  foodPreference:{
+    type : String,
+    default: "",
+    // Enum : FOOD_PREFERENCE,
+  },
+  variants: { 
     type: Array,
     default: []
   },
