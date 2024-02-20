@@ -15,9 +15,6 @@ const UserSchema = new Schema({
       return this.provider !== 'email' ? false : true;
     }
   },
-  phoneNumber: {
-    type: String
-  },
   firstName: {
     type: String
   },
@@ -26,6 +23,9 @@ const UserSchema = new Schema({
   },
   password: {
     type: String
+  },
+  phone: {
+    type: Number
   },
   provider: {
     type: String,
@@ -54,6 +54,7 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false
   },
+  emailToken:{type: String},
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
   updated: Date,
