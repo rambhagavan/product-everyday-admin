@@ -9,7 +9,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { showSnackBar } from '../../redux/actions/snackBarActions';
 import { useDispatch } from 'react-redux';
-import { adminGetCurrentUser, adminLoginService } from '../../services/Auth/AdminAuth';
+import { adminGetCurrentUser, adminLoginService, adminRegisterService, sendVerificationEmail } from '../../services/Auth/AdminAuth';
 import { Image } from 'antd';
 import Button from '@mui/material/Button';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -44,44 +44,92 @@ const JWTRoot = styled(JustifyBox)(() => ({
 const initialValues = {
   email: '',
   password: '',
-  remember: false
+  firstName: '',
+  lastName: '',
+  phone: '',
 };
+
+const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
+
 
 // form field validation schema
 const validationSchema = Yup.object().shape({
   password: Yup.string()
     .min(6, 'Password must be 6 character length')
     .required('Password is required!'),
-  email: Yup.string().email('Invalid Email address').required('Email is required!')
+  firstName: Yup.string()
+    .min(2, 'First Name must be 2 character length')
+    .required('First Name is required!'),
+  lastName: Yup.string()
+    .min(2, 'Last Name must be 2 character length')
+    .required('Last Name is required!'),
+  email: Yup.string().email('Invalid Email address').required('Email is required!'),
+  phone: Yup.string().matches(phoneRegExp, 'Phone number is not valid').required('Phone Number is required!')
 });
 
-const JwtLogin = () => {
+const JWTRegister = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch()
   // const { login } = useAuth();
 
+  // const handleFormSubmit = async (credentials) => {
+  //   setLoading(true);
+  //   const res = await adminLoginService(credentials)
+  //   console.log(res)
+  //   if (res.status === 200) {
+  //     dispatch(showSnackBar({ msg: "Logged In Succesfully", type: "success" }))
+  //     localStorage.removeItem('Token')
+  //     localStorage.removeItem('User')
+  //     localStorage.setItem('Token', JSON.stringify(res?.data?.token));
+  //     localStorage.setItem('User', JSON.stringify(res?.data?.user));
+  //     navigate('/dashboard')
+  //   } else {
+  //     dispatch(showSnackBar({ msg: `${res?.msg}`, type: "error" }))
+  //   }
+  //   setLoading(false);
+  // }
+  // const [credentials, setCredentials] = useState({
+  //   email: '',
+  //   password: '',
+  //   firstName: '',
+  //   lastName: '',
+  //   phone: '',
+  // });
+
+  const [error, setError] = useState(null);
+
+  // const handleChange = (e) => {
+  //   setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  // };
+
   const handleFormSubmit = async (credentials) => {
+    // e.preventDefault();
     setLoading(true);
-    const res = await adminLoginService(credentials)
-    console.log(res)
-    if (res.status === 200) {
-      dispatch(showSnackBar({ msg: "Logged In Succesfully", type: "success" }))
-      localStorage.removeItem('Token')
-      localStorage.removeItem('User')
-      localStorage.setItem('Token', JSON.stringify(res?.data?.token));
-      localStorage.setItem('User', JSON.stringify(res?.data?.user));
-      navigate('/dashboard')
-    } else {
-      dispatch(showSnackBar({ msg: `${res?.msg}`, type: "error" }))
+    try {
+      const data = await adminRegisterService(credentials);
+      localStorage.setItem("User", JSON.stringify(data));
+      console.log(data)
+      const verificationToken = data.token;
+
+      // Send verification email with the token
+      await sendVerificationEmail(credentials.email, verificationToken);
+
+      // Redirect to the verification page
+      setLoading(false);
+      navigate('/verify');
+    } catch (error) {
+      setLoading(false);
+      setError(error);
     }
-    setLoading(false);
-  }
+
+  };
 
   const handleGoogleLogin = () => {
     window.open(`${BACKEND_URL}/auth/google`,"_self");
   };
+
 
   return (
     <JWTRoot>
@@ -111,7 +159,7 @@ const JwtLogin = () => {
                       onChange={handleChange}
                       helperText={touched.email && errors.email}
                       error={Boolean(errors.email && touched.email)}
-                      sx={{ mb: 3 }}
+                      sx={{ mb: 1.5 }}
                     />
 
                     <TextField InputProps={{ sx: { borderRadius: 0 } }}
@@ -128,19 +176,48 @@ const JwtLogin = () => {
                       error={Boolean(errors.password && touched.password)}
                       sx={{ mb: 1.5 }}
                     />
-
-                    <FlexBox justifyContent="space-between">
-                      <FlexBox gap={1}>
-
-                      </FlexBox>
-
-                      <NavLink
-                        to="/session/forgot-password"
-                        style={{ color: theme.palette.primary.main }}
-                      >
-                        Forgot password?
-                      </NavLink>
-                    </FlexBox>
+                    <TextField InputProps={{ sx: { borderRadius: 0 } }}
+                      fullWidth
+                      size="small"
+                      name="firstName"
+                      type="firstName"
+                      label="First Name"
+                      variant="outlined"
+                      onBlur={handleBlur}
+                      value={values.firstName}
+                      onChange={handleChange}
+                      helperText={touched.firstName && errors.firstName}
+                      error={Boolean(errors.firstName && touched.firstName)}
+                      sx={{ mb: 1.5 }}
+                    />
+                    <TextField InputProps={{ sx: { borderRadius: 0 } }}
+                      fullWidth
+                      size="small"
+                      name="lastName"
+                      type="lastName"
+                      label="Last Name"
+                      variant="outlined"
+                      onBlur={handleBlur}
+                      value={values.lastName}
+                      onChange={handleChange}
+                      helperText={touched.lastName && errors.lastName}
+                      error={Boolean(errors.lastName && touched.lastName)}
+                      sx={{ mb: 1.5 }}
+                    />
+                    <TextField InputProps={{ sx: { borderRadius: 0 } }}
+                      fullWidth
+                      size="small"
+                      name="phone"
+                      type="phone"
+                      label="Phone Number"
+                      variant="outlined"
+                      onBlur={handleBlur}
+                      value={values.phone}
+                      onChange={handleChange}
+                      helperText={touched.phone && errors.phone}
+                      error={Boolean(errors.phone && touched.phone)}
+                      sx={{ mb: 1.5 }}
+                    />
 
                     <LoadingButton
                       type="submit"
@@ -152,7 +229,7 @@ const JwtLogin = () => {
                       sx={{ my: 2, borderRadius: '0px' }}
 
                     >
-                      Login
+                      Register
                     </LoadingButton>
                   </form>
                 )}
@@ -167,22 +244,22 @@ const JwtLogin = () => {
                   color="error"
                   loading={loading}
                   variant="contained"
+                  onClick={()=>handleGoogleLogin()}
                   // className='bg-blue'
                   sx={{ my: 2, borderRadius: '0px' }}
-                  onClick={() => handleGoogleLogin()}
 
                 >
-                  <GoogleIcon className='me-2' />  Login with Google
+                  <GoogleIcon className='me-2' />  Register with Google
                 </LoadingButton>
               </>
               }
               <Paragraph>
-                Don't have an account?
+                Already have an account?
                 <NavLink
-                  to="/session/signup"
+                  to="/session/signin"
                   style={{ color: theme.palette.primary.main, marginLeft: 5 }}
                 >
-                  Register
+                  Sign In
                 </NavLink>
               </Paragraph>
             </ContentBox>
@@ -193,4 +270,4 @@ const JwtLogin = () => {
   );
 };
 
-export default JwtLogin;
+export default JWTRegister;

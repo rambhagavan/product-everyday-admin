@@ -2,7 +2,7 @@
 export const APPNAME = `${process.env.REACT_APP_APP_NAME}`
 
 export const DEBUG = true
-export const DEV_MODE = false
+export const DEV_MODE = true
 
 // Service URL
 export const BACKEND_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
